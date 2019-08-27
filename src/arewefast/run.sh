@@ -17,7 +17,6 @@ mysql -D flix -e "INSERT INTO build (task, time, duration) VALUES('clone', FROM_
 
 # Change Directory
 cd /home/flix/build/flix
-git checkout issue-862-grafana
 
 # Gradle Build
 set GRADLE_BUILD_B (date '+%s')
