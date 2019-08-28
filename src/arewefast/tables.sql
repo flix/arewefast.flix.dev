@@ -1,3 +1,9 @@
+ CREATE TABLE `benchmark` (
+  `name` varchar(255) NOT NULL,
+  `time` datetime NOT NULL,
+  `duration` int(11) DEFAULT NULL
+);
+
  CREATE TABLE `build` (
   `task` varchar(255) NOT NULL,
   `time` datetime NOT NULL,
