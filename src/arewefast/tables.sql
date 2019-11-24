@@ -16,6 +16,12 @@ CREATE TABLE `phase` (
   `duration` bigint(20) NOT NULL
 );
 
+ CREATE TABLE `playground` (
+   `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   `status` varchar(255) NOT NULL,
+   `count` int(11) DEFAULT NULL
+ );
+
  CREATE TABLE `throughput` (
   `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `rate` bigint(20) NOT NULL
