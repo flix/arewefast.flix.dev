@@ -44,3 +44,11 @@ mysql -D flix -e "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE throughput FIELDS
 ./gradlew run -q --args="--benchmark main/src/resources/benchmark/BenchmarkConstraint.flix main/src/resources/benchmark/BenchmarkList.flix" > data.csv
 awk NF data.csv > benchmark.csv
 mysql -D flix -e "LOAD DATA LOCAL INFILE 'benchmark.csv' INTO TABLE benchmark FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' (name, duration)"
+
+# Programs evaluated successfully on the playground.
+ssh iostream@evaluator.flix.dev /home/iostream/flix/countSuccess.sh > data.csv
+mysql -D flix -e "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE playground FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' SET time = NOW()"
+
+# Programs evaluated unsuccessfully on the playground.
+ssh iostream@evaluator.flix.dev /home/iostream/flix/countFailure.sh > data.csv
+mysql -D flix -e "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE playground FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' SET time = NOW()"
