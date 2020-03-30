@@ -41,7 +41,7 @@ mysql -D flix -e "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE phase FIELDS TERM
 mysql -D flix -e "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE throughput FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' SET time = NOW()"
 
 # --benchmark
-./gradlew run -q --args="--benchmark main/src/resources/benchmark/BenchmarkConstraint.flix main/src/resources/benchmark/BenchmarkList.flix" > data.csv
+./gradlew run -q --args="--benchmark main/src/resources/benchmark/BenchmarkConstraint.flix main/src/resources/benchmark/BenchmarkList.flix main/src/resources/benchmark/BenchmarkSet.flix main/src/resources/benchmark/BenchmarkMap.flix" > data.csv
 awk NF data.csv > benchmark.csv
 mysql -D flix -e "LOAD DATA LOCAL INFILE 'benchmark.csv' INTO TABLE benchmark FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' (name, duration)"
 
