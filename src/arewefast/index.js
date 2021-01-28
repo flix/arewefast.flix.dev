@@ -38,7 +38,7 @@ if (!command) {
 // Git Clone and Pull                                                        //
 ///////////////////////////////////////////////////////////////////////////////
 function gitClone() {
-    execa.sync('git', ['clone', 'git@github.com:flix/flix.git']);
+    execa.sync('git', ['clone', 'https://github.com/flix/flix.git']);
 }
 
 function gitPull() {
