@@ -7,9 +7,14 @@ var mysql = require('mysql');
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
 ///////////////////////////////////////////////////////////////////////////////
-var hostname = process.argv[2]
-var username = process.argv[3]
-var password = process.argv[4]
+var command = process.argv[2]
+var hostname = process.argv[3]
+var username = process.argv[4]
+var password = process.argv[5]
+
+if (!command) {
+    throw new Error("Missing command");
+}
 
 if (!hostname) {
     throw new Error("Missing hostname.");
@@ -61,7 +66,7 @@ function benchmarkThroughput() {
         function (error, results, fields) {
             if (error) throw error;
         });
-    connection.destroy();
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,11 +98,16 @@ function benchmarkPhases() {
                 if (error) throw error;
             });
     })
-    connection.destroy();
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
-benchmarkThroughput()
-benchmarkPhases()
+if (command === "throughput") {
+    benchmarkThroughput()
+} else if (command === "phases") {
+    benchmarkPhases()
+} else {
+    throw new Error("Unknown command: " + command)
+}
