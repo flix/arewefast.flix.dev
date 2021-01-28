@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 var execa = require('execa');
 var mysql = require('mysql');
+var fs = require("fs");
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -27,6 +28,30 @@ if (!password) {
 if (!command) {
     throw new Error("Missing command");
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Git Clone and Pull                                                        //
+///////////////////////////////////////////////////////////////////////////////
+function gitClone() {
+    execa.sync('git', ['clone', 'git@github.com:flix/flix.git']);
+}
+
+function gitPull() {
+    execa.sync('git', ['-C', './flix/', 'pull']);
+}
+
+function gitCloneOrPull() {
+    if (!fs.existsSync("./flix/")) {
+        gitClone()
+    } else {
+        gitPull()
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Gradle Jar                                                                //
+///////////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Configure Mysql Connection                                                //
@@ -104,6 +129,8 @@ function benchmarkPhases() {
 ///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
+//gitCloneOrPull()
+
 if (command === "throughput") {
     benchmarkThroughput()
 } else if (command === "phases") {
