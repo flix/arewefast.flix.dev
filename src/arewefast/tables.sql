@@ -27,6 +27,15 @@ CREATE TABLE `phase` (
   `rate` bigint(20) NOT NULL
 );
 
+CREATE TABLE `phase_ext` (
+    `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `phase` varchar(255) NOT NULL,
+    `lines` bigint(20) NOT NULL,
+    `threads` bigint(20) NOT NULL,
+    `iterations` bigint(20) NOT NULL,
+    `duration` bigint(20) NOT NULL
+);
+
 CREATE TABLE `throughput_ext` (
     `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `lines` bigint(20) NOT NULL,
