@@ -26,3 +26,14 @@ CREATE TABLE `phase` (
   `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `rate` bigint(20) NOT NULL
 );
+
+CREATE TABLE `throughput_ext` (
+    `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `lines` bigint(20) NOT NULL,
+    `threads` bigint(20) NOT NULL,
+    `iterations` bigint(20) NOT NULL,
+    `minThroughput` bigint(20) NOT NULL,
+    `maxThroughput` bigint(20) NOT NULL,
+    `avgThroughput` bigint(20) NOT NULL,
+    `medianThroughput` bigint(20) NOT NULL
+);
