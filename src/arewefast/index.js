@@ -6,6 +6,11 @@ var mysql = require('mysql');
 var fs = require("fs");
 
 ///////////////////////////////////////////////////////////////////////////////
+// Paths                                                                     //
+///////////////////////////////////////////////////////////////////////////////
+var JAR_PATH = './flix/build/libs/flix.jar';
+
+///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
 ///////////////////////////////////////////////////////////////////////////////
 var hostname = process.argv[2]
@@ -51,7 +56,9 @@ function gitCloneOrPull() {
 ///////////////////////////////////////////////////////////////////////////////
 // Gradle Jar                                                                //
 ///////////////////////////////////////////////////////////////////////////////
-
+function gradleJar() {
+    execa.sync('./gradlew', ['jar'], {"cwd": "./flix/"});
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Configure Mysql Connection                                                //
@@ -70,7 +77,7 @@ function newConnection() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkThroughput() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', 'flix.jar', '--Xbenchmark-throughput', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-throughput', '--json']);
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -99,7 +106,7 @@ function benchmarkThroughput() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkPhases() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', 'flix.jar', '--Xbenchmark-phases', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-phases', '--json']);
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -129,8 +136,14 @@ function benchmarkPhases() {
 ///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
-//gitCloneOrPull()
 
+// Get the source code.
+gitCloneOrPull()
+
+// Build the jar.
+gradleJar()
+
+// Branch on the command.
 if (command === "throughput") {
     benchmarkThroughput()
 } else if (command === "phases") {
