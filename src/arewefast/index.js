@@ -7,14 +7,10 @@ var mysql = require('mysql');
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
 ///////////////////////////////////////////////////////////////////////////////
-var command = process.argv[2]
-var hostname = process.argv[3]
-var username = process.argv[4]
-var password = process.argv[5]
-
-if (!command) {
-    throw new Error("Missing command");
-}
+var hostname = process.argv[2]
+var username = process.argv[3]
+var password = process.argv[4]
+var command = process.argv[5]
 
 if (!hostname) {
     throw new Error("Missing hostname.");
@@ -26,6 +22,10 @@ if (!username) {
 
 if (!password) {
     throw new Error("Missing password");
+}
+
+if (!command) {
+    throw new Error("Missing command");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
