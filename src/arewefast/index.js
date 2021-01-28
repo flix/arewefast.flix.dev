@@ -61,7 +61,7 @@ function benchmarkThroughput() {
         function (error, results, fields) {
             if (error) throw error;
         });
-    connection.end();
+    connection.destroy();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ function benchmarkPhases() {
                 if (error) throw error;
             });
     })
-    connection.end();
+    connection.destroy();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
