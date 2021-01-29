@@ -16,6 +16,13 @@
    `count` int(11) DEFAULT NULL
  );
 
+CREATE TABLE `benchmark_ext` (
+    `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `name` varchar(255) NOT NULL,
+    `threads` bigint(20) NOT NULL,
+    `duration` int(11) DEFAULT NULL
+);
+
 CREATE TABLE `phase_ext` (
     `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `phase` varchar(255) NOT NULL,
