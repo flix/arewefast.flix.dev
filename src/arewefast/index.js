@@ -100,7 +100,7 @@ function gradleTest() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Benchmark Throughput                                                      //
+// Throughput                                                                //
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkThroughput() {
     // Command to execute.
@@ -129,7 +129,7 @@ function benchmarkThroughput() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Benchmark Phases                                                          //
+// Phases                                                                    //
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkPhases() {
     // Command to execute.
@@ -161,6 +161,36 @@ function benchmarkPhases() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Benchmarks                                                                //
+///////////////////////////////////////////////////////////////////////////////
+function benchmarkBenchmarks() {
+    // Command to execute.
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--benchmark', '--json', 'flix/main/src/resources/benchmark/BenchmarkList.flix']);
+
+    // Parse the result JSON.
+    var json = JSON.parse(result.stdout)
+    var threads = json.threads;
+    var benchmarks = json.benchmarks;
+
+    // Connect to MySQL.
+    var connection = newConnection()
+    connection.connect();
+    benchmarks.forEach(function (elm) {
+        var name = elm.name;
+        var time = elm.time;
+
+        // Insert into MySQL.
+        connection.query(
+            "INSERT INTO benchmark_ext VALUES (NOW(), ?, ?, ?)",
+            [threads, name, time],
+            function (error, results, fields) {
+                if (error) throw error;
+            });
+    })
+    connection.end();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -177,6 +207,8 @@ if (command === "throughput") {
     benchmarkPhases()
 } else if (command === "test") {
     gradleTest()
+}else if (command === "benchmarks") {
+    benchmarkBenchmarks()
 } else {
     throw new Error("Unknown command: " + command)
 }

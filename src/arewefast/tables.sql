@@ -18,8 +18,8 @@
 
 CREATE TABLE `benchmark_ext` (
     `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `name` varchar(255) NOT NULL,
     `threads` bigint(20) NOT NULL,
+    `name` varchar(255) NOT NULL,
     `duration` int(11) DEFAULT NULL
 );
 
