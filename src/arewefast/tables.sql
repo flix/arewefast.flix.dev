@@ -1,16 +1,10 @@
- CREATE TABLE `benchmark` (
-  `name` varchar(255) NOT NULL,
-  `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `duration` int(11) DEFAULT NULL
-);
-
- CREATE TABLE `build` (
+CREATE TABLE `build` (
   `task` varchar(255) NOT NULL,
   `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `duration` int(11) DEFAULT NULL
 );
 
- CREATE TABLE `playground` (
+CREATE TABLE `playground` (
    `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
    `status` varchar(255) NOT NULL,
    `count` int(11) DEFAULT NULL

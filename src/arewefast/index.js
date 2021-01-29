@@ -73,9 +73,9 @@ function gitCloneOrPull() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Gradle Jar                                                                //
+// Gradle Build                                                              //
 ///////////////////////////////////////////////////////////////////////////////
-function gradleJar() {
+function gradleBuild() {
     execa.sync('./gradlew', ['clean'], {"cwd": "./flix/"});
 
     var t = getCurrentUnixTime();
@@ -214,7 +214,7 @@ gitCloneOrPull()
 
 // Branch on the command.
 if (command === "build") {
-    gradleJar()
+    gradleBuild()
 } else if (command === "test") {
     gradleTest()
 } else if (command === "throughput") {
