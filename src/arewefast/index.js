@@ -76,7 +76,22 @@ function gitCloneOrPull() {
 // Gradle Jar                                                                //
 ///////////////////////////////////////////////////////////////////////////////
 function gradleJar() {
+    execa.sync('./gradlew', ['clean'], {"cwd": "./flix/"});
+
+    var t = getCurrentUnixTime();
     execa.sync('./gradlew', ['jar'], {"cwd": "./flix/"});
+    var e = getCurrentUnixTime() - t;
+
+    // Connect and Insert into MySQL.
+    var connection = newConnection()
+    connection.connect();
+    connection.query(
+        "INSERT INTO build VALUES (?, NOW(), ?)",
+        ["build", e],
+        function (error, results, fields) {
+            if (error) throw error;
+        });
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,20 +209,19 @@ function benchmarkBenchmarks() {
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
 
-// Get the source code.
+// Always clone or pull.
 gitCloneOrPull()
 
-// Build the jar.
-gradleJar()
-
 // Branch on the command.
-if (command === "throughput") {
+if (command === "build") {
+    gradleJar()
+} else if (command === "test") {
+    gradleTest()
+} else if (command === "throughput") {
     benchmarkThroughput()
 } else if (command === "phases") {
     benchmarkPhases()
-} else if (command === "test") {
-    gradleTest()
-}else if (command === "benchmarks") {
+} else if (command === "benchmarks") {
     benchmarkBenchmarks()
 } else {
     throw new Error("Unknown command: " + command)
