@@ -35,6 +35,13 @@ if (!command) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Timestamp                                                                 //
+///////////////////////////////////////////////////////////////////////////////
+function getCurrentUnixTime() {
+    return (new Date().getTime() / 1000);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Git Clone and Pull                                                        //
 ///////////////////////////////////////////////////////////////////////////////
 function gitClone() {
@@ -58,6 +65,26 @@ function gitCloneOrPull() {
 ///////////////////////////////////////////////////////////////////////////////
 function gradleJar() {
     execa.sync('./gradlew', ['jar'], {"cwd": "./flix/"});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Gradle Test                                                               //
+///////////////////////////////////////////////////////////////////////////////
+function gradleTest() {
+    var t = getCurrentUnixTime();
+    execa.sync('./gradlew', ['test'], {"cwd": "./flix/"});
+    var e = getCurrentUnixTime() - t;
+
+    // Connect and Insert into MySQL.
+    var connection = newConnection()
+    connection.connect();
+    connection.query(
+        "INSERT INTO build VALUES (?, NOW(), ?)",
+        ["test", e],
+        function (error, results, fields) {
+            if (error) throw error;
+        });
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,6 +175,8 @@ if (command === "throughput") {
     benchmarkThroughput()
 } else if (command === "phases") {
     benchmarkPhases()
+} else if (command === "test") {
+    gradleTest()
 } else {
     throw new Error("Unknown command: " + command)
 }
