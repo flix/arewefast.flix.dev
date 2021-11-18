@@ -6,6 +6,13 @@ CREATE TABLE `benchmark_ext`
     `duration` int(11)      NOT NULL
 );
 
+CREATE TABLE `codesize`
+(
+    `time`             datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `lines`            bigint(20) NOT NULL,
+    `bytes`            bigint(20) NOT NULL
+);
+
 CREATE TABLE `build`
 (
     `task`     varchar(255) NOT NULL,
