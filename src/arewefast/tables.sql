@@ -30,6 +30,16 @@ CREATE TABLE `phase_ext`
     `duration`   bigint(20)   NOT NULL
 );
 
+CREATE TABLE `phase_incremental`
+(
+    `time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `phase`      varchar(255) NOT NULL,
+    `lines`      bigint(20)   NOT NULL,
+    `threads`    bigint(20)   NOT NULL,
+    `iterations` bigint(20)   NOT NULL,
+    `duration`   bigint(20)   NOT NULL
+);
+
 CREATE TABLE `playground`
 (
     `time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,

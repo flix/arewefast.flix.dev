@@ -176,6 +176,38 @@ function benchmarkPhases() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Phases Incremental                                                        //
+///////////////////////////////////////////////////////////////////////////////
+function benchmarkPhasesIncremental() {
+    // Command to execute.
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-incremental', '--json']);
+
+    // Parse the result JSON.
+    var json = JSON.parse(result.stdout)
+    var lines = json.lines;
+    var threads = json.threads;
+    var iterations = json.iterations;
+    var phases = json.phases;
+
+    // Connect to MySQL.
+    var connection = newConnection()
+    connection.connect();
+    phases.forEach(function (elm) {
+        var phase = elm.phase;
+        var time = elm.time;
+
+        // Insert into MySQL.
+        connection.query(
+            "INSERT INTO phase_incremental VALUES (NOW(), ?, ?, ?, ?, ?)",
+            [phase, lines, threads, iterations, time],
+            function (error, results, fields) {
+                if (error) throw error;
+            });
+    })
+    connection.end();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Code Size                                                                 //
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkCodeSize() {
@@ -247,6 +279,8 @@ if (command === "build") {
     benchmarkThroughput()
 } else if (command === "phases") {
     benchmarkPhases()
+} else if (command === "incremental") {
+    benchmarkPhasesIncremental()
 } else if (command === "codesize") {
     benchmarkCodeSize();
 } else if (command === "benchmarks") {
