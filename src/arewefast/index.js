@@ -263,6 +263,39 @@ function benchmarkBenchmarks() {
     connection.end();
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Benchmarks                                                                //
+///////////////////////////////////////////////////////////////////////////////
+function commits() {
+    // Pull the log in format (hash <tab> time <tab> message)
+    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s']);
+
+    // Parse the command output
+    var lines = result.stdout.split("\n");
+    var rows = lines.map((line) => line.split("\t"));
+
+    // Connect tot MySQL
+    var connection = newConnection();
+    connection.connect();
+    rows.forEach((row) => {
+        var hash = row[0];
+        var time = row[1];
+        var full_message = row[2];
+        // truncate the message to 255 characters
+        var message = full_message.substring(0, 255);
+
+        connection.query(
+            "INSERT INTO commits VALUES (?, FROM_UNIXTIME(?), ?)",
+            [hash, time, message],
+            function (error, results, fields) {
+                if (error) throw error;
+            });
+    })
+    connection.end();
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,6 +318,8 @@ if (command === "build") {
     benchmarkCodeSize();
 } else if (command === "benchmarks") {
     benchmarkBenchmarks()
+} else if (command === "commits") {
+    commits()
 } else {
     throw new Error("Unknown command: " + command)
 }
