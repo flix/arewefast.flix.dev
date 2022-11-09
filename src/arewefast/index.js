@@ -269,19 +269,21 @@ function benchmarkBenchmarks() {
 ///////////////////////////////////////////////////////////////////////////////
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
-    var result = execa.sync('git', ['log', '--pretty=%H\t%%ct\t%s']);
+    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s']);
 
     // Parse the command output
-    var lines = result.split("\n");
+    var lines = result.stdout.split("\n");
     var rows = lines.map((line) => line.split("\t"));
 
     // Connect tot MySQL
     var connection = newConnection();
     connection.connect();
     rows.forEach((row) => {
-        hash = row[0];
-        time = row[1];
-        message = row[2];
+        var hash = row[0];
+        var time = row[1];
+        var full_message = row[2];
+        // truncate the message to 255 characters
+        var message = full_message.substring(0, 255);
 
         connection.query(
             "INSERT INTO commits VALUES (?, FROM_UNIXTIME(?), ?)",
