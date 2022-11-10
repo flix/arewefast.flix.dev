@@ -16,6 +16,7 @@ var JAR_PATH = './flix/build/libs/flix.jar';
 var hostname = process.argv[2]
 var username = process.argv[3]
 var password = process.argv[4]
+var grafana_key = process.argv[6]
 var command = process.argv[5]
 
 if (!hostname) {
@@ -269,7 +270,7 @@ function benchmarkBenchmarks() {
 ///////////////////////////////////////////////////////////////////////////////
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
-    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s']);
+    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s', '--since=1 month ago']);
 
     // Parse the command output
     var lines = result.stdout.split("\n");
@@ -296,6 +297,26 @@ function commits() {
 
 }
 
+function annotations() {
+
+    // Connect to MySQL
+    var connection = newConnection();
+    connection.connect();
+    connection.query(
+        "SELECT * FROM commits WHERE id == null",
+        function (error, results, fields) {
+            if (error) throw error;
+            results.forEach((row) => {
+                var hash = row[0];
+                var time = row[1];
+                var full_message = row[2];
+                console.log(hash + " " + time + " " + full_message)
+            })
+        }
+    )
+    connection.end();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main                                                                      //
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,6 +341,8 @@ if (command === "build") {
     benchmarkBenchmarks()
 } else if (command === "commits") {
     commits()
+} else if (command === "annotations") {
+    annotations()
 } else {
     throw new Error("Unknown command: " + command)
 }
