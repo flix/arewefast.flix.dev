@@ -64,5 +64,6 @@ CREATE TABLE `commits`
     `sha`       varchar(40)     NOT NULL,
     `time`      datetime        NOT NULL,
     `message`   varchar(255)    NOT NULL,
+    `id`        int(11),
     PRIMARY KEY (`sha`)
 )

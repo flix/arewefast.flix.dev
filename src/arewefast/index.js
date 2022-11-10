@@ -4,6 +4,7 @@
 var execa = require('execa');
 var mysql = require('mysql');
 var fs = require("fs");
+var http = require('http')
 
 ///////////////////////////////////////////////////////////////////////////////
 // Paths                                                                     //
@@ -17,6 +18,7 @@ var hostname = process.argv[2]
 var username = process.argv[3]
 var password = process.argv[4]
 var command = process.argv[5]
+var grafana_key = process.argv[6]
 
 if (!hostname) {
     throw new Error("Missing hostname.");
@@ -269,7 +271,8 @@ function benchmarkBenchmarks() {
 ///////////////////////////////////////////////////////////////////////////////
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
-    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s']);
+    // Limit to the last month
+    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s', '--since=1 month ago']);
 
     // Parse the command output
     var lines = result.stdout.split("\n");
@@ -278,6 +281,7 @@ function commits() {
     // Connect tot MySQL
     var connection = newConnection();
     connection.connect();
+    // Add each log message to the database
     rows.forEach((row) => {
         var hash = row[0];
         var time = row[1];
@@ -286,13 +290,76 @@ function commits() {
         var message = full_message.substring(0, 255);
 
         connection.query(
-            "INSERT INTO commits VALUES (?, FROM_UNIXTIME(?), ?)",
+            "INSERT INTO commits VALUES (?, FROM_UNIXTIME(?), ?, NULL)",
             [hash, time, message],
             function (error, results, fields) {
                 if (error) throw error;
             });
     })
     connection.end();
+
+}
+
+function annotations() {
+
+    // Connect to MySQL
+    var connection = newConnection();
+    connection.connect();
+
+    // Get all the commits with no associated annotation.
+    connection.query(
+        "SELECT * FROM commits WHERE id IS NULL",
+        function (error, results, fields) {
+            if (error) throw error;
+            results.forEach((row) => {
+
+                console.log("sha: " + row.sha)
+
+                // build a request for the Grafana dashboard
+                var data = JSON.stringify({
+                    dashboardUID: "agdciz4k",
+                    panelId: 6,
+                    time: row.time.getTime(),
+                    timeEnd: row.time.getTime(),
+                    text: row.message,
+                    tags: [],
+                });
+
+                var options = {
+                    host: hostname,
+                    port: '3000',
+                    path: '/api/annotations',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': "Bearer " + grafana_key,
+                        'Content-Length': Buffer.byteLength(data)
+                    }
+                };
+
+                // make the request to Grafana
+                var request = http.request(options, (response) => {
+                    response.on("data", (json) => {
+                        
+                        // add the returned ID to the database
+                        var id = JSON.parse(json).id
+                        connection.query(
+                            "UPDATE commits SET id = (?) WHERE sha = (?)",
+                            [id, row.sha], 
+                            function (error, results, fields) {
+                                if (error) throw error;
+                            }
+                        )
+                    });
+                });
+                request.write(data);
+                request.end();
+
+                
+            })
+            connection.end()
+        }
+    );
 
 }
 
@@ -320,6 +387,8 @@ if (command === "build") {
     benchmarkBenchmarks()
 } else if (command === "commits") {
     commits()
+} else if (command === "annotations") {
+    annotations()
 } else {
     throw new Error("Unknown command: " + command)
 }
