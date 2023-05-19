@@ -11,3 +11,5 @@ cd /home/flix/nightly/flix
 ./gradlew jar
 
 cp build/libs/flix.jar /srv/www/flix.dev/wwwroot/nightly/flix-(date -I).jar
+
+cp build/libs/flix.jar /srv/www/flix.dev/wwwroot/nightly/flix-latest.jar
