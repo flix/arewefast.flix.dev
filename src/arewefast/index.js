@@ -9,6 +9,7 @@ var fs = require("fs");
 // Paths                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
 var JAR_PATH = './flix/build/libs/flix.jar';
+var BENCHMARKS_PATH = './flix/main/src/resources/benchmark';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -238,7 +239,7 @@ function benchmarkCodeSize() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkBenchmarks() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, 'benchmark', '--json', 'flix/main/src/resources/benchmark/BenchmarkList.flix']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, 'benchmark', '--json'], {cwd: BENCHMARKS_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
