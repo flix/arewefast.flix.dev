@@ -7,7 +7,9 @@ In order to run the arewefast database modification scripts, you need the follow
     - The development helper scripts `init.sh` and `run.sh` assume passwordless access.
     - The main script `index.js` assumes access with password.
     You can create a test user on your local server by executing
-    `CREATE USER 'test'@'localhost' IDENTIFIED WITH mysql_native_password BY 'test';
+    `CREATE USER 'test'@'localhost' IDENTIFIED WITH mysql_native_password BY 'test';`
+    The user can then be granted privileges by executing:
+    `GRANT ALL PRIVILEGES ON *.* TO 'test'@'localhost' WITH GRANT OPTION;`
 
 
 Running `npm install` will install the necessary Node dependencies
