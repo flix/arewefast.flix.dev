@@ -122,7 +122,7 @@ function gradleTest() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkThroughput() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-throughput', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-throughput', '--json'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -151,7 +151,7 @@ function benchmarkThroughput() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkPhases() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-phases', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-phases', '--json'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -183,7 +183,7 @@ function benchmarkPhases() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkPhasesIncremental() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-incremental', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-incremental', '--json'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -215,7 +215,7 @@ function benchmarkPhasesIncremental() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkCodeSize() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-code-size', '--json']);
+    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-code-size', '--json'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
