@@ -8,8 +8,10 @@ var fs = require("fs");
 ///////////////////////////////////////////////////////////////////////////////
 // Paths                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
-var JAR_PATH = './flix/build/libs/flix.jar';
-var BENCHMARKS_PATH = './flix/main/src/resources/benchmark';
+var CWD = process.cwd();
+var JAR_PATH = CWD + '/flix/build/libs/flix.jar';
+var BENCHMARKS_PATH = CWD + '/flix/main/src/resources/benchmark';
+var FLIX_DIR_PATH = CWD + '/flix';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -62,11 +64,11 @@ function gitClone() {
 }
 
 function gitPull() {
-    execa.sync('git', ['-C', './flix/', 'pull']);
+    execa.sync('git', ['-C', FLIX_DIR_PATH, 'pull']);
 }
 
 function gitCloneOrPull() {
-    if (!fs.existsSync("./flix/")) {
+    if (!fs.existsSync(FLIX_DIR_PATH)) {
         gitClone()
     } else {
         gitPull()
@@ -77,10 +79,10 @@ function gitCloneOrPull() {
 // Gradle Build                                                              //
 ///////////////////////////////////////////////////////////////////////////////
 function gradleBuild() {
-    execa.sync('./gradlew', ['clean'], {"cwd": "./flix/"});
+    execa.sync('./gradlew', ['clean'], {"cwd": FLIX_DIR_PATH});
 
     var t = getCurrentUnixTime();
-    execa.sync('./gradlew', ['jar'], {"cwd": "./flix/"});
+    execa.sync('./gradlew', ['jar'], {"cwd": FLIX_DIR_PATH});
     var e = getCurrentUnixTime() - t;
 
     // Connect and Insert into MySQL.
@@ -100,7 +102,7 @@ function gradleBuild() {
 ///////////////////////////////////////////////////////////////////////////////
 function gradleTest() {
     var t = getCurrentUnixTime();
-    execa.sync('./gradlew', ['test'], {"cwd": "./flix/"});
+    execa.sync('./gradlew', ['test'], {"cwd": FLIX_DIR_PATH});
     var e = getCurrentUnixTime() - t;
 
     // Connect and Insert into MySQL.
@@ -239,7 +241,7 @@ function benchmarkCodeSize() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkBenchmarks() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, 'benchmark', '--json'], {cwd: BENCHMARKS_PATH});
+    var result = execa.sync('java', ['-jar', JAR_PATH, 'benchmark', '--json'], {"cwd": BENCHMARKS_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -271,7 +273,7 @@ function benchmarkBenchmarks() {
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
     // Limit to the last month
-    var result = execa.sync('git', ['-C', './flix/', 'log', '--pretty=%H\t%ct\t%s', '--since=1 month ago']);
+    var result = execa.sync('git', ['-C', FLIX_DIR_PATH, 'log', '--pretty=%H\t%ct\t%s', '--since=1 month ago']);
 
     // Parse the command output
     var lines = result.stdout.split("\n");
