@@ -291,7 +291,7 @@ function commits() {
         var message = full_message.substring(0, 255);
 
         connection.query(
-            "INSERT INTO commits VALUES (?, FROM_UNIXTIME(?), ?)",
+            "REPLACE INTO commits VALUES (?, FROM_UNIXTIME(?), ?, NULL)",
             [hash, time, message],
             function (error, results, fields) {
                 if (error) throw error;
