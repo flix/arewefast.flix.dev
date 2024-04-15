@@ -65,4 +65,11 @@ CREATE TABLE `commits`
     `time`      datetime        NOT NULL,
     `message`   varchar(255)    NOT NULL,
     PRIMARY KEY (`sha`)
-)
+);
+
+CREATE TABLE `memory_usage`
+(
+    `time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `bytes`      bigint(20)   NOT NULL
+);
+

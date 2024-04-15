@@ -268,7 +268,7 @@ function benchmarkBenchmarks() {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Benchmarks                                                                //
+// Commits                                                                   //
 ///////////////////////////////////////////////////////////////////////////////
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
@@ -298,7 +298,31 @@ function commits() {
             });
     })
     connection.end();
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// Memory Usage                                                              //
+///////////////////////////////////////////////////////////////////////////////
+function benchmarkMemory() {
+    // Command to execute.
+    var result = execa.sync('java', ['-jar', JAR_PATH, 'Xmemory', '--json'], {"cwd": FLIX_DIR_PATH});
+
+    // Parse the result JSON.
+    var json = JSON.parse(result.stdout)
+    var bytes = json.bytes;
+
+    // Connect to MySQL.
+    var connection = newConnection()
+    connection.connect();
+
+    // Insert into MySQL.
+    connection.query(
+        "INSERT INTO memory_usage VALUES (NOW(), ?)",
+        [bytes],
+        function (error, results, fields) {
+            if (error) throw error;
+        });
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -325,6 +349,8 @@ if (command === "build") {
     benchmarkBenchmarks()
 } else if (command === "commits") {
     commits()
+} else if (command === "memory") {
+    benchmarkMemory()
 } else {
     throw new Error("Unknown command: " + command)
 }
