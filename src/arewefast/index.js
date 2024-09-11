@@ -11,6 +11,8 @@ var fs = require("fs");
 var CWD = process.cwd();
 var JAR_PATH = CWD + '/flix/build/libs/flix.jar';
 var BENCHMARKS_PATH = CWD + '/flix/main/src/resources/benchmark';
+var BENCHMARKS_BUILD_PATH = CWD + '/benchmark_build';
+var BENCHMARKS_JAR_PATH = CWD + '/benchmark_build/artifact/benchmark_build.jar';
 var FLIX_DIR_PATH = CWD + '/flix';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,12 +243,21 @@ function benchmarkCodeSize() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkBenchmarks() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, 'benchmark', '--json'], {"cwd": BENCHMARKS_PATH});
+    // First copy the benchmarks to a new directory
+    execa.sync('cp', ['-r', BENCHMARKS_PATH, BENCHMARKS_BUILD_PATH]);
+
+    // Build the benchmarks.
+    execa.sync('java', ['-jar', JAR_PATH, 'build'], {"cwd": BENCHMARKS_BUILD_PATH});
+
+    // Build the jar.
+    execa.sync('java', ['-jar', JAR_PATH, 'build-jar'], {"cwd": BENCHMARKS_BUILD_PATH});
+    // Run the benchmarks.
+    var result = execa.sync('java', ['-jar', BENCHMARKS_JAR_PATH], {"cwd": BENCHMARKS_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
-    var threads = json.threads;
-    var benchmarks = json.benchmarks;
+    var threads = -1;
+    var benchmarks = json;
 
     // Connect to MySQL.
     var connection = newConnection()
@@ -298,6 +309,7 @@ function commits() {
             });
     })
     connection.end();
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,7 +362,7 @@ if (command === "build") {
 } else if (command === "commits") {
     commits()
 } else if (command === "memory") {
-    benchmarkMemory()
+    benchmarkMemory();
 } else {
     throw new Error("Unknown command: " + command)
 }
