@@ -279,7 +279,7 @@ function benchmarkBenchmarks() {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Benchmarks                                                                //
+// Commits                                                                   //
 ///////////////////////////////////////////////////////////////////////////////
 function commits() {
     // Pull the log in format (hash <tab> time <tab> message)
