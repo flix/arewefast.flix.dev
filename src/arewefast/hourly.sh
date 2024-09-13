@@ -2,6 +2,7 @@
 set -e
 
 rm -rf /home/flix/build/flix
+rm -rf /home/flix/build/benchmark_build
 
 cd /home/flix/build/
 
