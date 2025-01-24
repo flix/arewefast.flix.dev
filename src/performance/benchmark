@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+set -e
+
+function fail() {
+    >&2 echo "$1"
+    exit 1
+}
+
+# If a process is using more than this percent CPU,
+# then we assume they are benchmarking and refuse to run our benchmarks.
+MAX_CPU=20
+
+USAGE="Usage:    $0 [-a <args string>] [-h] <git ref> [<git refs...>]
+
+Runs benchmarking on the given git references.
+
+Options:
+  -h    Display this help message.
+  -a    The arguments to pass to Flix. (Default: \"Xperf\")
+        This argument may be repeated to test multiple configurations."
+
+args=()
+
+while getopts "ha:" opt; do
+    case $opt in
+        h)
+            echo "$USAGE"
+            exit 0
+            ;;
+        a)
+            args+=("$OPTARG")
+            ;;
+        \?)
+            >&2 echo "Error: -$OPTARG is not a valid option"
+            >&2 echo ""
+            >&2 echo "$USAGE"
+            exit 1
+            ;;
+    esac
+done
+
+# Skip ahead to arguments
+shift $((OPTIND-1))
+
+# We need at least one git ref
+if [ "$#" -lt 1 ]; then
+  >&2 echo "Error: At least one git reference must be provided."
+  >&2 echo ""
+  >&2 echo "$USAGE"
+  exit 1
+fi
+git_refs=("$@")
+
+# Default the args to Xperf if unspecified
+if [ ${#args[@]} -eq 0 ]; then
+    args=("Xperf")
+fi
+
+# check that no one is running anything at the moment
+top_cpu="$(ps -eo pcpu --sort=pcpu | tail -n 1)"
+is_over_max="$(bc <<< "$top_cpu > $MAX_CPU")"
+
+if [ "$is_over_max" -eq 1 ]; then
+    top_process="$(ps -eo cmd --sort=pcpu | tail -n 1)"
+    fail "Error: Another process is using ${top_cpu}% CPU: $top_process"
+fi
+
+# create the jars directory if it does not exist
+mkdir -p "jars"
+
+cd flix
+
+# try checking out the branches before testing
+git checkout -q master
+git pull -q --all
+for ref in "${git_refs[@]}"; do
+    git rev-parse --verify "$ref" > /dev/null 2> /dev/null || fail "Error: Unknown ref '$ref'"
+done
+
+# build the jar for each ref if it does not exist
+for ref in "${git_refs[@]}"; do
+    sha=$(git rev-parse --verify "$ref")
+    if [ -e "../jars/$sha.jar" ]; then
+        echo "Jar for '$ref' already in cache."
+    else
+        echo "Building '$ref'"
+        git checkout -q "$ref"
+        ./gradlew jar > /dev/null 2> /dev/null || fail "Error: Unable to build ref '$ref'"
+        mv ./build/libs/flix.jar "../jars/${sha}.jar"
+    fi
+done
+
+# execute the command for each jar
+for arg in "${args[@]}"; do
+    for ref in "${git_refs[@]}"; do
+        sha=$(git rev-parse --verify "$ref")
+        echo "On ref '$ref' executing: flix $arg"
+        echo ""
+        java -jar "../jars/$sha.jar" $arg # intentionally breaking spaces
+        echo ""
+        echo ""
+    done
+done
