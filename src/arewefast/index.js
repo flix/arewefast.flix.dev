@@ -14,6 +14,9 @@ var BENCHMARKS_PATH = CWD + '/flix/main/src/resources/benchmark';
 var BENCHMARKS_BUILD_PATH = CWD + '/benchmark_build';
 var BENCHMARKS_JAR_PATH = CWD + '/benchmark_build/artifact/benchmark_build.jar';
 var FLIX_DIR_PATH = CWD + '/flix';
+var LIBRARY_PATH = CWD + '/flix/main/src/library';
+var SOURCE_PATH = CWD + '/flix/main/src/ca/uwaterloo/flix';
+var TEST_PATH = CWD + '/flix/main/test';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -290,7 +293,7 @@ function commits() {
     var lines = result.stdout.split("\n");
     var rows = lines.map((line) => line.split("\t"));
 
-    // Connect tot MySQL
+    // Connect to MySQL
     var connection = newConnection();
     connection.connect();
     // Add each log message to the database
@@ -334,6 +337,35 @@ function benchmarkMemory() {
         function (error, results, fields) {
             if (error) throw error;
         });
+}
+
+// Lines                                                                  //
+///////////////////////////////////////////////////////////////////////////////
+function lines() {
+    // For source code, we only care about scala files.
+    var sourceResult = execa.sync('./countLines.sh', [SOURCE_PATH, "-name", "*.scala"]);
+    var libResult = execa.sync('./countLines.sh', [LIBRARY_PATH, "-name", "*.flix"]);
+    var flixTestResult = execa.sync('./countLines.sh', [TEST_PATH, "-name", "*.flix"]);
+    var scalaTestResult = execa.sync('./countLines.sh', [TEST_PATH, "-name", "*.scala"]);
+
+    var data = [
+        ["source", parseInt(sourceResult.stdout)],
+        ["lib", parseInt(libResult.stdout)],
+        ["test_flix", parseInt(flixTestResult.stdout)],
+        ["test_scala", parseInt(scalaTestResult.stdout)],
+    ];
+
+    // Add the results to the DB
+    var connection = newConnection();
+    connection.connect();
+    for ([kind, numLines] of data) {
+        connection.query(
+            "INSERT INTO line_count VALUES (NOW(), ?, ?)",
+            [kind, numLines],
+            function (error, results, fields) {
+                if (error) throw error;
+            });
+    }
     connection.end();
 }
 
@@ -363,6 +395,8 @@ if (command === "build") {
     commits()
 } else if (command === "memory") {
     benchmarkMemory();
+} else if (command === "lines") {
+    lines()
 } else {
     throw new Error("Unknown command: " + command)
 }
