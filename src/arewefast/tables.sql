@@ -73,3 +73,9 @@ CREATE TABLE `memory_usage`
     `bytes`      bigint(20)   NOT NULL
 );
 
+CREATE TABLE `line_count`
+(
+    `time`     datetime	        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `kind`     varchar(255)     NOT NULL,
+    `lines`    bigint(20)       NOT NULL
+);
