@@ -23,3 +23,4 @@ mkdir -p /home/flix/build/log
 /usr/bin/node /home/flix/build/index.js localhost flix flix benchmarks &> /home/flix/build/log/benchmarks.log
 
 rm -rf /tmp/flix-package-*
+rm -rf /tmp/flix-project-*
