@@ -50,7 +50,8 @@ function newConnection() {
         host: hostname,
         user: username,
         password: password,
-        database: 'flix'
+        database: 'flix',
+        timezone: 'Z'    // UTC
     });
 }
 
