@@ -9,7 +9,7 @@ var fs = require("fs");
 // Paths                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
 var CWD = process.cwd();
-var JAR_PATH = CWD + '/flix/build/libs/flix.jar';
+var JAR_PATH = CWD + '/out/flix/assembly.dest/out.jar';
 var BENCHMARKS_PATH = CWD + '/flix/main/src/resources/benchmark';
 var BENCHMARKS_BUILD_PATH = CWD + '/benchmark_build';
 var BENCHMARKS_JAR_PATH = CWD + '/benchmark_build/artifact/benchmark_build.jar';
@@ -82,13 +82,13 @@ function gitCloneOrPull() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Gradle Build                                                              //
+// Mill Build                                                              //
 ///////////////////////////////////////////////////////////////////////////////
-function gradleBuild() {
-    execa.sync('./gradlew', ['clean'], {"cwd": FLIX_DIR_PATH});
+function millBuild() {
+    execa.sync('./mill', ['clean'], {"cwd": FLIX_DIR_PATH});
 
     var t = getCurrentUnixTime();
-    execa.sync('./gradlew', ['jar'], {"cwd": FLIX_DIR_PATH});
+    execa.sync('./mill', ['flix.build'], {"cwd": FLIX_DIR_PATH});
     var e = getCurrentUnixTime() - t;
 
     // Connect and Insert into MySQL.
@@ -104,11 +104,11 @@ function gradleBuild() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Gradle Test                                                               //
+// Mill Test
 ///////////////////////////////////////////////////////////////////////////////
-function gradleTest() {
+function millTest() {
     var t = getCurrentUnixTime();
-    execa.sync('./gradlew', ['test'], {"cwd": FLIX_DIR_PATH});
+    execa.sync('./mill', ['flix.test'], {"cwd": FLIX_DIR_PATH});
     var e = getCurrentUnixTime() - t;
 
     // Connect and Insert into MySQL.
@@ -380,9 +380,9 @@ gitCloneOrPull()
 
 // Branch on the command.
 if (command === "build") {
-    gradleBuild()
+    millBuild()
 } else if (command === "test") {
-    gradleTest()
+    millTest()
 } else if (command === "throughput") {
     benchmarkThroughput()
 } else if (command === "phases") {
