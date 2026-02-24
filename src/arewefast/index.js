@@ -88,7 +88,7 @@ function millBuild() {
     execa.sync('./mill', ['clean'], {"cwd": FLIX_DIR_PATH});
 
     var t = getCurrentUnixTime();
-    execa.sync('./mill', ['flix.build'], {"cwd": FLIX_DIR_PATH});
+    execa.sync('./mill', ['flix.compile'], {"cwd": FLIX_DIR_PATH});
     var e = getCurrentUnixTime() - t;
 
     // Connect and Insert into MySQL.
