@@ -9,7 +9,7 @@ var fs = require("fs");
 // Paths                                                                     //
 ///////////////////////////////////////////////////////////////////////////////
 var CWD = process.cwd();
-var JAR_PATH = CWD + '/out/flix/assembly.dest/out.jar';
+var JAR_PATH = CWD + '/flix/out/flix/assembly.dest/out.jar';
 var BENCHMARKS_PATH = CWD + '/flix/main/src/resources/benchmark';
 var BENCHMARKS_BUILD_PATH = CWD + '/benchmark_build';
 var BENCHMARKS_JAR_PATH = CWD + '/benchmark_build/artifact/benchmark_build.jar';
