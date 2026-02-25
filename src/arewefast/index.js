@@ -338,6 +338,7 @@ function benchmarkMemory() {
         function (error, results, fields) {
             if (error) throw error;
         });
+    connection.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
