@@ -14,8 +14,7 @@ mkdir -p /home/flix/build/log
 
 /usr/bin/node /home/flix/build/index.js localhost flix flix build &> /home/flix/build/log/build.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix test &> /home/flix/build/log/test.log
-/usr/bin/node /home/flix/build/index.js localhost flix flix throughput &> /home/flix/build/log/throughput.log
-/usr/bin/node /home/flix/build/index.js localhost flix flix phases &> /home/flix/build/log/phases.log
+/usr/bin/node /home/flix/build/index.js localhost flix flix perf &> /home/flix/build/log/perf.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix incremental &> /home/flix/build/log/incremental.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix codesize &> /home/flix/build/log/codesize.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix memory &> /home/flix/build/log/memory.log

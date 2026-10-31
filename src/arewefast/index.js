@@ -17,6 +17,7 @@ var FLIX_DIR_PATH = CWD + '/flix';
 var LIBRARY_PATH = CWD + '/flix/main/src/library';
 var SOURCE_PATH = CWD + '/flix/main/src/ca/uwaterloo/flix';
 var TEST_PATH = CWD + '/flix/main/test';
+var PERF_DIR_PATH = CWD + '/flix/build/perf';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -124,56 +125,50 @@ function millTest() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Throughput                                                                //
+// Perf (Throughput and Phases)                                              //
 ///////////////////////////////////////////////////////////////////////////////
-function benchmarkThroughput() {
+function benchmarkPerf() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-throughput', '--json'], {"cwd": FLIX_DIR_PATH});
+    // Xperf ignores --json and instead writes its results as JSON files to ./build/perf/.
+    // With --par only the multi-threaded, non-incremental experiment is run.
+    // We use 10 iterations to match the old --Xbenchmark-throughput and --Xbenchmark-phases flags.
+    execa.sync('java', ['-jar', JAR_PATH, 'Xperf', '--par', '--n', '10'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
-    var json = JSON.parse(result.stdout)
-    var lines = json.lines;
-    var threads = json.threads;
-    var iterations = json.iterations;
-    var minThroughput = json.throughput.min;
-    var maxThroughput = json.throughput.max;
-    var avgThroughput = json.throughput.avg;
-    var medianThroughput = json.throughput.median;
+    // Note: Xperf currently writes summary.json double-encoded (a JSON string that contains JSON),
+    // so we parse a second time if the first parse yields a string. This also works once that is fixed.
+    var summary = JSON.parse(fs.readFileSync(PERF_DIR_PATH + '/summary.json', 'utf8'));
+    if (typeof summary === 'string') {
+        summary = JSON.parse(summary);
+    }
+    var timeWithPar = JSON.parse(fs.readFileSync(PERF_DIR_PATH + '/timeWithPar.json', 'utf8'));
+    var lines = summary.lines;
+    var threads = summary.threads;
+    var iterations = summary.iterations;
+    var minThroughput = summary.throughput.min;
+    var maxThroughput = summary.throughput.max;
+    var avgThroughput = summary.throughput.avg;
+    var medianThroughput = summary.throughput.median;
+    var phases = timeWithPar.results;
 
-    // Connect and Insert into MySQL.
+    // Connect to MySQL.
     var connection = newConnection()
     connection.connect();
+
+    // Insert throughput into MySQL.
     connection.query(
         "INSERT INTO throughput_ext VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?)",
         [lines, threads, iterations, minThroughput, maxThroughput, avgThroughput, medianThroughput],
         function (error, results, fields) {
             if (error) throw error;
         });
-    connection.end();
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// Phases                                                                    //
-///////////////////////////////////////////////////////////////////////////////
-function benchmarkPhases() {
-    // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-phases', '--json'], {"cwd": FLIX_DIR_PATH});
-
-    // Parse the result JSON.
-    var json = JSON.parse(result.stdout)
-    var lines = json.lines;
-    var threads = json.threads;
-    var iterations = json.iterations;
-    var phases = json.phases;
-
-    // Connect to MySQL.
-    var connection = newConnection()
-    connection.connect();
+    // Insert phases into MySQL.
     phases.forEach(function (elm) {
         var phase = elm.phase;
-        var time = elm.time;
+        // Xperf reports phase times in milliseconds, but phase_ext.duration is in nanoseconds.
+        var time = Math.round(elm.time * 1e6);
 
-        // Insert into MySQL.
         connection.query(
             "INSERT INTO phase_ext VALUES (NOW(), ?, ?, ?, ?, ?)",
             [phase, lines, threads, iterations, time],
@@ -384,10 +379,8 @@ if (command === "build") {
     millBuild()
 } else if (command === "test") {
     millTest()
-} else if (command === "throughput") {
-    benchmarkThroughput()
-} else if (command === "phases") {
-    benchmarkPhases()
+} else if (command === "perf") {
+    benchmarkPerf()
 } else if (command === "incremental") {
     benchmarkPhasesIncremental()
 } else if (command === "codesize") {
