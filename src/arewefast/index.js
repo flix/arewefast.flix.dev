@@ -180,32 +180,6 @@ function benchmarkPerf() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Code Size                                                                 //
-///////////////////////////////////////////////////////////////////////////////
-function benchmarkCodeSize() {
-    // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, '--Xbenchmark-code-size', '--json'], {"cwd": FLIX_DIR_PATH});
-
-    // Parse the result JSON.
-    var json = JSON.parse(result.stdout)
-    var lines = json.lines;
-    var bytes = json.codeSize;
-
-    // Connect to MySQL.
-    var connection = newConnection()
-    connection.connect();
-
-    // Insert into MySQL.
-    connection.query(
-        "INSERT INTO codesize VALUES (NOW(), ?, ?)",
-        [lines, bytes],
-        function (error, results, fields) {
-            if (error) throw error;
-        });
-    connection.end();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Benchmarks                                                                //
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkBenchmarks() {
@@ -349,8 +323,6 @@ if (command === "build") {
     millTest()
 } else if (command === "perf") {
     benchmarkPerf()
-} else if (command === "codesize") {
-    benchmarkCodeSize();
 } else if (command === "benchmarks") {
     benchmarkBenchmarks()
 } else if (command === "commits") {
