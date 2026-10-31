@@ -6,6 +6,7 @@ CREATE TABLE `benchmark_ext`
     `duration` int(11)      NOT NULL
 );
 
+-- Lines of Flix source and fatjar size in bytes of https://github.com/magnus-madsen/bibblitz.
 CREATE TABLE `codesize`
 (
     `time`             datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP,

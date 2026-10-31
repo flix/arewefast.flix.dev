@@ -18,6 +18,9 @@ var LIBRARY_PATH = CWD + '/flix/main/src/library';
 var SOURCE_PATH = CWD + '/flix/main/src/ca/uwaterloo/flix';
 var TEST_PATH = CWD + '/flix/main/test';
 var PERF_DIR_PATH = CWD + '/flix/build/perf';
+var BIBBLITZ_DIR_PATH = CWD + '/bibblitz';
+var BIBBLITZ_SRC_PATH = CWD + '/bibblitz/src';
+var BIBBLITZ_JAR_PATH = CWD + '/bibblitz/artifact/bibblitz.jar';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
@@ -180,6 +183,41 @@ function benchmarkPerf() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Code Size                                                                 //
+///////////////////////////////////////////////////////////////////////////////
+function benchmarkCodeSize() {
+    // Clone or pull BibBlitz.
+    if (!fs.existsSync(BIBBLITZ_DIR_PATH)) {
+        execa.sync('git', ['clone', 'https://github.com/magnus-madsen/bibblitz.git']);
+    } else {
+        execa.sync('git', ['-C', BIBBLITZ_DIR_PATH, 'pull']);
+    }
+
+    // Count the lines of Flix source code.
+    var linesResult = execa.sync('./countLines.sh', [BIBBLITZ_SRC_PATH, "-name", "*.flix"]);
+    var lines = parseInt(linesResult.stdout);
+
+    // Build the fatjar with the freshly built compiler.
+    execa.sync('java', ['-jar', JAR_PATH, 'build-fatjar'], {"cwd": BIBBLITZ_DIR_PATH});
+
+    // Measure the size of the fatjar.
+    var bytes = fs.statSync(BIBBLITZ_JAR_PATH).size;
+
+    // Connect to MySQL.
+    var connection = newConnection()
+    connection.connect();
+
+    // Insert into MySQL.
+    connection.query(
+        "INSERT INTO codesize VALUES (NOW(), ?, ?)",
+        [lines, bytes],
+        function (error, results, fields) {
+            if (error) throw error;
+        });
+    connection.end();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Benchmarks                                                                //
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkBenchmarks() {
@@ -323,6 +361,8 @@ if (command === "build") {
     millTest()
 } else if (command === "perf") {
     benchmarkPerf()
+} else if (command === "codesize") {
+    benchmarkCodeSize();
 } else if (command === "benchmarks") {
     benchmarkBenchmarks()
 } else if (command === "commits") {

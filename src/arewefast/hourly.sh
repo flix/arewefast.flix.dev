@@ -3,6 +3,7 @@ set -e
 
 rm -rf /home/flix/build/flix
 rm -rf /home/flix/build/benchmark_build
+rm -rf /home/flix/build/bibblitz
 
 cd /home/flix/build/
 
@@ -15,6 +16,7 @@ mkdir -p /home/flix/build/log
 /usr/bin/node /home/flix/build/index.js localhost flix flix build &> /home/flix/build/log/build.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix test &> /home/flix/build/log/test.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix perf &> /home/flix/build/log/perf.log
+/usr/bin/node /home/flix/build/index.js localhost flix flix codesize &> /home/flix/build/log/codesize.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix memory &> /home/flix/build/log/memory.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix commits &> /home/flix/build/log/commits.log
 /usr/bin/node /home/flix/build/index.js localhost flix flix benchmarks &> /home/flix/build/log/benchmarks.log
