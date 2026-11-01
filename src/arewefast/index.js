@@ -134,8 +134,8 @@ function benchmarkPerf() {
     // Command to execute.
     // Xperf ignores --json and instead writes its results as JSON files to ./build/perf/.
     // With --par only the multi-threaded, non-incremental experiment is run.
-    // We use 10 iterations to match the old --Xbenchmark-throughput and --Xbenchmark-phases flags.
-    execa.sync('java', ['-jar', JAR_PATH, 'Xperf', '--par', '--n', '10'], {"cwd": FLIX_DIR_PATH});
+    // We use 100 iterations so the reported min/max/median are less sensitive to a few noisy runs.
+    execa.sync('java', ['-jar', JAR_PATH, 'Xperf', '--par', '--n', '100'], {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     // Note: Xperf currently writes summary.json double-encoded (a JSON string that contains JSON),
