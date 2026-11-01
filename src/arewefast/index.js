@@ -148,20 +148,29 @@ function benchmarkPerf() {
     var lines = summary.lines;
     var threads = summary.threads;
     var iterations = summary.iterations;
-    var minThroughput = summary.throughput.min;
-    var maxThroughput = summary.throughput.max;
-    var avgThroughput = summary.throughput.avg;
-    var medianThroughput = summary.throughput.median;
     var phases = timeWithPar.results;
+
+    // The throughput statistics keyed by kind: 'frontend', 'backend' and 'overall' (see flix/flix#13627).
+    // With --frontend only 'frontend' is present. Before #13627 the object was a single flat set of
+    // statistics for the overall throughput, so we wrap that shape as 'overall'.
+    var throughput = summary.throughput;
+    var throughputByKind = (throughput.min !== undefined) ? {overall: throughput} : throughput;
 
     // Connect to MySQL.
     var connection = newConnection()
     connection.connect();
 
-    // Insert throughput into MySQL.
+    // Insert throughput into MySQL: one row per kind, in a single statement so all rows share the same time.
+    var placeholders = [];
+    var params = [];
+    Object.keys(throughputByKind).forEach(function (kind) {
+        var stats = throughputByKind[kind];
+        placeholders.push("(NOW(), ?, ?, ?, ?, ?, ?, ?, ?)");
+        params.push(kind, lines, threads, iterations, stats.min, stats.max, stats.avg, stats.median);
+    });
     connection.query(
-        "INSERT INTO throughput_ext VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?)",
-        [lines, threads, iterations, minThroughput, maxThroughput, avgThroughput, medianThroughput],
+        "INSERT INTO throughput (time, kind, lines, threads, iterations, minThroughput, maxThroughput, avgThroughput, medianThroughput) VALUES " + placeholders.join(", "),
+        params,
         function (error, results, fields) {
             if (error) throw error;
         });

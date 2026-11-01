@@ -31,16 +31,6 @@ CREATE TABLE `phase_ext`
     `duration`   bigint(20)   NOT NULL
 );
 
-CREATE TABLE `phase_incremental`
-(
-    `time`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `phase`      varchar(255) NOT NULL,
-    `lines`      bigint(20)   NOT NULL,
-    `threads`    bigint(20)   NOT NULL,
-    `iterations` bigint(20)   NOT NULL,
-    `duration`   bigint(20)   NOT NULL
-);
-
 CREATE TABLE `playground`
 (
     `time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -48,16 +38,19 @@ CREATE TABLE `playground`
     `count`  int(11)      NOT NULL
 );
 
-CREATE TABLE `throughput_ext`
+-- Throughput (lines/sec) of the Xperf --par experiment: one row per kind ('frontend', 'backend' or 'overall').
+CREATE TABLE `throughput`
 (
-    `time`             datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `lines`            bigint(20) NOT NULL,
-    `threads`          bigint(20) NOT NULL,
-    `iterations`       bigint(20) NOT NULL,
-    `minThroughput`    bigint(20) NOT NULL,
-    `maxThroughput`    bigint(20) NOT NULL,
-    `avgThroughput`    bigint(20) NOT NULL,
-    `medianThroughput` bigint(20) NOT NULL
+    `time`             datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `kind`             varchar(255) NOT NULL,
+    `lines`            bigint(20)   NOT NULL,
+    `threads`          bigint(20)   NOT NULL,
+    `iterations`       bigint(20)   NOT NULL,
+    `minThroughput`    bigint(20)   NOT NULL,
+    `maxThroughput`    bigint(20)   NOT NULL,
+    `avgThroughput`    bigint(20)   NOT NULL,
+    `medianThroughput` bigint(20)   NOT NULL,
+    KEY `kind_time` (`kind`, `time`)
 );
 
 CREATE TABLE `commits`
