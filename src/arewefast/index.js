@@ -169,7 +169,7 @@ function benchmarkPerf() {
         params.push(kind, lines, threads, iterations, stats.min, stats.max, stats.avg, stats.median);
     });
     connection.query(
-        "INSERT INTO throughput (time, kind, lines, threads, iterations, minThroughput, maxThroughput, avgThroughput, medianThroughput) VALUES " + placeholders.join(", "),
+        "INSERT INTO `throughput` (`time`, `kind`, `lines`, `threads`, `iterations`, `minThroughput`, `maxThroughput`, `avgThroughput`, `medianThroughput`) VALUES " + placeholders.join(", "),
         params,
         function (error, results, fields) {
             if (error) throw error;
