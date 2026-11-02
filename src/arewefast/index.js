@@ -23,6 +23,14 @@ var BIBBLITZ_SRC_PATH = CWD + '/bibblitz/src';
 var BIBBLITZ_JAR_PATH = CWD + '/bibblitz/artifact/bibblitz.jar';
 
 ///////////////////////////////////////////////////////////////////////////////
+// JVM Arguments                                                             //
+///////////////////////////////////////////////////////////////////////////////
+// We pin the heap at 8GB for every JVM we start so that heap resizing does not affect the measurements.
+// Xperf forces a GC before every timed run (see flix/flix#13630), which only reduces noise when the heap is
+// pinned; Xperf warns if it is not.
+var JVM_ARGS = ['-Xms8g', '-Xmx8g'];
+
+///////////////////////////////////////////////////////////////////////////////
 // Parse Command Line Arguments                                              //
 ///////////////////////////////////////////////////////////////////////////////
 var hostname = process.argv[2]
@@ -135,7 +143,7 @@ function benchmarkPerf() {
     // Xperf ignores --json and instead writes its results as JSON files to ./build/perf/.
     // With --par only the multi-threaded, non-incremental experiment is run.
     // We use 250 iterations so the reported min/max/median are less sensitive to a few noisy runs.
-    execa.sync('java', ['-jar', JAR_PATH, 'Xperf', '--par', '--n', '250'], {"cwd": FLIX_DIR_PATH});
+    execa.sync('java', JVM_ARGS.concat(['-jar', JAR_PATH, 'Xperf', '--par', '--n', '250']), {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     // Note: Xperf currently writes summary.json double-encoded (a JSON string that contains JSON),
@@ -207,7 +215,7 @@ function benchmarkCodeSize() {
     var lines = parseInt(linesResult.stdout);
 
     // Build the fatjar with the freshly built compiler.
-    execa.sync('java', ['-jar', JAR_PATH, 'build-fatjar'], {"cwd": BIBBLITZ_DIR_PATH});
+    execa.sync('java', JVM_ARGS.concat(['-jar', JAR_PATH, 'build-fatjar']), {"cwd": BIBBLITZ_DIR_PATH});
 
     // Measure the size of the fatjar.
     var bytes = fs.statSync(BIBBLITZ_JAR_PATH).size;
@@ -235,12 +243,12 @@ function benchmarkBenchmarks() {
     execa.sync('cp', ['-r', BENCHMARKS_PATH, BENCHMARKS_BUILD_PATH]);
 
     // Build the benchmarks.
-    execa.sync('java', ['-jar', JAR_PATH, 'build'], {"cwd": BENCHMARKS_BUILD_PATH});
+    execa.sync('java', JVM_ARGS.concat(['-jar', JAR_PATH, 'build']), {"cwd": BENCHMARKS_BUILD_PATH});
 
     // Build the jar.
-    execa.sync('java', ['-jar', JAR_PATH, 'build-jar'], {"cwd": BENCHMARKS_BUILD_PATH});
+    execa.sync('java', JVM_ARGS.concat(['-jar', JAR_PATH, 'build-jar']), {"cwd": BENCHMARKS_BUILD_PATH});
     // Run the benchmarks.
-    var result = execa.sync('java', ['-jar', BENCHMARKS_JAR_PATH], {"cwd": BENCHMARKS_PATH});
+    var result = execa.sync('java', JVM_ARGS.concat(['-jar', BENCHMARKS_JAR_PATH]), {"cwd": BENCHMARKS_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
@@ -305,7 +313,7 @@ function commits() {
 ///////////////////////////////////////////////////////////////////////////////
 function benchmarkMemory() {
     // Command to execute.
-    var result = execa.sync('java', ['-jar', JAR_PATH, 'Xmemory', '--json'], {"cwd": FLIX_DIR_PATH});
+    var result = execa.sync('java', JVM_ARGS.concat(['-jar', JAR_PATH, 'Xmemory', '--json']), {"cwd": FLIX_DIR_PATH});
 
     // Parse the result JSON.
     var json = JSON.parse(result.stdout)
